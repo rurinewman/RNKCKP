@@ -1,0 +1,31 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Post {
+  id        String     @default(cuid()) @id
+  title     String
+  content   String?
+  published Boolean @default(false)
+  author    Apple?   @relation(fields: [authorId], references: [id])
+  authorId  String?
+}
+
+model Apple {
+  id            String    @default(cuid()) @id
+  name          String?
+  colour        String?   @unique
+  madeAt        DateTime  @default(now()) @map(name: "made_at")
+  boughtAt      DateTime  @updatedAt @map(name: "bought_at")
+  posts         Post[]
+  @@map(name: "apples")
+}
+
