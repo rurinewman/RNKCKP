@@ -1,14 +1,15 @@
-import React from "react"
-import { GetServerSideProps } from "next"
-import ReactMarkdown from "react-markdown"
-import Layout from "../../components/Layout"
-import { PostProps } from "../../components/Post"
+import React from "react";
+import { GetServerSidePropsContext } from "next";
+import { PrismaClient } from '@prisma/client';
 import prisma from '../../lib/prisma';
+import { PostProps } from "../../components/Post";
+import ReactMarkdown from "react-markdown";
+import Layout from "../../components/Layout";
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps = async ({ params }: GetServerSidePropsContext) => {
   const post = await prisma.post.findUnique({
     where: {
-      id: String(params?.id),
+      id: String(params?.id), // Ensure ID is passed as a string
     },
     include: {
       author: {
@@ -16,15 +17,25 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       },
     },
   });
+
+  // Check if the post exists, otherwise return an empty object
+  if (!post) {
+    return {
+      props: {} // Return an empty object if post is not found
+    };
+  }
+
+  // Return the post as props
   return {
-    props: post,
+    props: post, // The post data will be passed to the component as props
   };
 };
 
+// Your React component for rendering the post
 const Post: React.FC<PostProps> = (props) => {
-  let title = props.title
+  let title = props.title;
   if (!props.published) {
-    title = `${title} (Draft)`
+    title = `${title} (Draft)`;
   }
 
   return (
@@ -32,7 +43,7 @@ const Post: React.FC<PostProps> = (props) => {
       <div>
         <h2>{title}</h2>
         <p>By {props?.author?.name || "Unknown author"}</p>
-        <ReactMarkdown children={props.content} />
+        <ReactMarkdown children={props.content || ""} />
       </div>
       <style jsx>{`
         .page {
@@ -56,7 +67,7 @@ const Post: React.FC<PostProps> = (props) => {
         }
       `}</style>
     </Layout>
-  )
-}
+  );
+};
 
-export default Post
+export default Post;
