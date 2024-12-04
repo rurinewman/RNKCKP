@@ -26,6 +26,14 @@ model Apple {
   madeAt        DateTime  @default(now()) @map(name: "made_at")
   boughtAt      DateTime  @updatedAt @map(name: "bought_at")
   posts         Post[]
+  banana        Banana?  @relation("AppleBanana")
   @@map(name: "apples")
 }
 
+model Banana {
+  id            String    @id @default(cuid())
+  appleId       String    @unique
+  country       String?
+  apple         Apple     @relation("AppleBanana", fields: [appleId], references: [id])
+  @@map(name: "bananas")
+}
